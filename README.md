@@ -1,51 +1,47 @@
-# Otomasi-Jaringan---Traceroute-Logger
-Pencatatan hasil traceroute
+Otomasi Jaringan - Traceroute Logger
 
-import subprocess
-import csv
-from datetime import datetime
+Program ini merupakan alat otomasi jaringan berbasis Python yang berfungsi untuk menjalankan perintah traceroute secara otomatis dan mencatat hasilnya ke dalam file CSV.
+Dengan skrip ini, kamu dapat memantau rute perjalanan paket data menuju host tertentu (misalnya 8.8.8.8) sekaligus menyimpan hasilnya untuk dokumentasi atau analisis lebih lanjut.
 
-def run_traceroute(target):
-    print(f"Menjalankan traceroute ke {target}...\n")
-    try:
-        # Jalankan traceroute tanpa opsi -n (untuk versi inetutils)
-        result = subprocess.run(
-            ["traceroute", target],
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
+Fitur Utama:
+- Menjalankan traceroute otomatis ke target yang ditentukan.
+- Menampilkan hasil traceroute langsung di terminal.
+- Menyimpan hasil ke file CSV dengan format nama file otomatis berdasarkan target dan waktu eksekusi.
+- Menangani error dan timeout dengan pesan yang informatif.
+- Log waktu setiap hop untuk menganalisis performa rute jaringan.
 
-        if result.returncode != 0 or not result.stdout.strip():
-            print("❌ Tidak ada hasil traceroute. Coba jalankan perintah traceroute manual di terminal untuk memastikan koneksi.")
-            print("Error:", result.stderr)
-            return None
+Cara Kerja
+Program menjalankan perintah:
+python3 traceroute_monitor.py
 
-        print("\n--- Hasil Traceroute ---\n")
-        print(result.stdout)
+Hasil traceroute dibaca dari output terminal.
 
-        # Simpan hasil ke CSV
-        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        filename = f"traceroute_{target.replace('.', '-')}_{timestamp}.csv"
+Setiap hop (lompatan jaringan) diekstrak dan disimpan ke file CSV dalam format:
+Hop, Host / IP, Waktu (ms)
 
-        with open(filename, "w", newline="") as csvfile:
-            writer = csv.writer(csvfile)
-            writer.writerow(["Hop", "Host / IP", "Waktu (ms)"])
-            
-            for line in result.stdout.splitlines()[1:]:  # Lewati baris pertama
-                parts = line.split()
-                if len(parts) >= 2:
-                    hop = parts[0]
-                    host = parts[1]
-                    time = " ".join(parts[2:])
-                    writer.writerow([hop, host, time])
+File disimpan dengan nama otomatis
 
-        print(f"\nTraceroute selesai ✅\nHasil disimpan di: {filename}")
-        return filename
+Persyaratan
+Pastikan sistem kamu memenuhi syarat berikut:
+- Sistem operasi Linux / macOS / WSL (Windows Subsystem for Linux)
+- Python 3.8.2 / 3.x sudah terinstal
+- Paket traceroute tersedia di sistem (instal dengan: sudo apt install traceroute)
 
-    except subprocess.TimeoutExpired:
-        print("❌ Traceroute timeout (tidak ada respons dari jaringan).")
-        return None
+Cara Menjalankan
+Jalankan skrip:
+python3 traceroute_monitor.py
 
-if __name__ == "__main__":
-    run_traceroute("8.8.8.8")
+Output di terminal:
+
+Menjalankan traceroute ke 8.8.8.8...
+
+
+--- Hasil Traceroute ---
+
+traceroute to 8.8.8.8 (8.8.8.8), 64 hops max
+  1   10.0.2.2  0.357ms  0.579ms  0.014ms 
+  2   10.0.2.2  0.908ms  0.618ms  0.808ms 
+
+
+Traceroute selesai ✅
+Hasil disimpan di: traceroute_8-8-8-8_2025-10-21_01-46-01.csv
